@@ -1,6 +1,5 @@
 # Import packages
 from dash import Dash, dcc, html, callback, Output, Input, State
-from custom_func import create_rating_diff, get_move_coordinate
 import numpy as np
 import pandas as pd
 import pickle
@@ -32,15 +31,7 @@ num_cols = ['white_rating', 'black_rating', 'start_time_limit', 'increment']
 # App layout
 app.layout = dbc.Container([
     html.Div([
-        html.H1('Victory Vision', style={"margin-bottom":'20px'}),
-
-        html.P("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi nec nulla vitae risus dictum vestibulum. \
-               Morbi hendrerit, massa et volutpat gravida, dui lorem facilisis sem, eleifend commodo ligula tellus pretium neque. \
-               Nunc tincidunt sollicitudin placerat. Etiam ultricies arcu at nunc fermentum, sed tincidunt purus sodales. \
-               Morbi dignissim sollicitudin egestas. Etiam ac enim sit amet ligula condimentum dictum. In cursus gravida ante, \
-               eget scelerisque purus. Pellentesque placerat metus et diam tincidunt, id semper dolor lobortis. \
-               Vestibulum convallis ultricies odio a sodales. Cras vulputate posuere ornare. Aenean iaculis tincidunt cursus.")
-    ],
+        html.H1('Victory Vision', style={"margin-bottom":'20px'})],
     style={"margin":'30px', "margin-bottom":'20px', "display":'inline-block'}),
 
     dbc.Row([
