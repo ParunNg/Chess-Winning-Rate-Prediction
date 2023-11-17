@@ -101,8 +101,8 @@ def calculate_selling_price(rated, white_rating, black_rating, time_limit, incre
     X[num_cols] = X[num_cols].astype(float)
     y = np.round(model.predict_proba(X)[:, 1][0]*100, 2)
 
-    return [f"White Winning Rate is: {y}%"]
+    return [f"White Player Winning Rate is: {y}%"]
 
 # Run the app
 if __name__ == '__main__':
-    app.run(debug=True, port=8001)
+    app.run(host='0.0.0.0', port=8080)
