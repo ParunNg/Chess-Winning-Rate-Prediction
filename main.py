@@ -1,5 +1,6 @@
 # Import packages
 from dash import Dash, dcc, html, callback, Output, Input, State
+from custom_func import create_rating_diff, get_move_coordinate
 import numpy as np
 import pandas as pd
 import pickle
@@ -21,54 +22,61 @@ model_path = "chess_winner_predictor.pkl"
 model = pickle.load(open(model_path, 'rb'))
 
 # get all the possible first moves of white and black players
-white_first_moves = list(model[0][1].transformers_[-2][1].categories_[0])
-black_first_moves = list(model[0][1].transformers_[-2][1].categories_[1])
+white_first_moves = list(model.named_steps['preprocessor'].
+                         named_steps['transformers'].transformers_[-1][1].categories_[0])
+black_first_moves = list(model.named_steps['preprocessor'].
+                         named_steps['transformers'].transformers_[-1][1].categories_[1])
+
+num_cols = ['white_rating', 'black_rating', 'start_time_limit', 'increment']
 
 # App layout
 app.layout = dbc.Container([
     html.Div([
-        html.H1('Car Price Prediction', style={"margin-bottom":'20px'}),
+        html.H1('Victory Vision', style={"margin-bottom":'20px'}),
 
-        html.P("Having trouble setting the perfect price for your car...? No worries, \
-               our car price prediction tool provides a means for finding a good selling price of your car based on the car specifications. \
-               The car price predictions are based on the output of the machine learning model that we have painstakingly created.")
+        html.P("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi nec nulla vitae risus dictum vestibulum. \
+               Morbi hendrerit, massa et volutpat gravida, dui lorem facilisis sem, eleifend commodo ligula tellus pretium neque. \
+               Nunc tincidunt sollicitudin placerat. Etiam ultricies arcu at nunc fermentum, sed tincidunt purus sodales. \
+               Morbi dignissim sollicitudin egestas. Etiam ac enim sit amet ligula condimentum dictum. In cursus gravida ante, \
+               eget scelerisque purus. Pellentesque placerat metus et diam tincidunt, id semper dolor lobortis. \
+               Vestibulum convallis ultricies odio a sodales. Cras vulputate posuere ornare. Aenean iaculis tincidunt cursus.")
     ],
     style={"margin":'30px', "margin-bottom":'20px', "display":'inline-block'}),
 
     dbc.Row([
         html.Div([
             html.H5("Rated"),
-            dbc.Label("Enter the max power of the car (must always be positive)"),
-            dcc.Dropdown(id="rated", options=['True', 'False'], placeholder="Rated", style={"margin-bottom": '20px'}),
+            dbc.Label("Whether a chess match is rated or not"),
+            dcc.Dropdown(id="rated", options=['True', 'False'], value='True', clearable=False, style={"margin-bottom": '20px'}),
 
             html.H5("White Rating"),
-            dbc.Label("Enter the manufacture year of the car"),
-            dcc.Input(id="white_rating", type="number", min=1, max=3000, placeholder="White Rating", style={"margin-bottom": '20px'}), # 1983 is the minimum year in the cars dataset
+            dbc.Label("Enter the rating of white player"),
+            dbc.Input(id="white_rating", type="number", min=1, max=3000, placeholder="White Rating", style={"margin-bottom": '20px'}), # 1983 is the minimum year in the cars dataset
 
             html.H5("Black Rating"),
-            dbc.Label("Enter the fuel type of the car"),
-            dcc.Input(id="black_rating", type="number", min=1, max=3000, placeholder="Black Rating", style={"margin-bottom": '20px'}),
+            dbc.Label("Enter the rating of black player"),
+            dbc.Input(id="black_rating", type="number", min=1, max=3000, placeholder="Black Rating", style={"margin-bottom": '20px'}),
 
             html.H5("Start Time Limit"),
-            dbc.Label("Enter the brand of the car"),
-            dcc.Input(id="time_limit", type="number", min=0, max=180, placeholder="Start Time Limit", style={"margin-bottom": '20px'}),
+            dbc.Label("Enter the start time limit of a chess match (If there is no time limit, leave it as 0)"),
+            dbc.Input(id="time_limit", type="number", min=0, max=180, placeholder="Start Time Limit", style={"margin-bottom": '20px'}),
 
             html.H5("Increment"),
-            dbc.Label("Enter the brand of the car"),
-            dcc.Input(id="increment", type="number", min=0, max=180, placeholder="Increment", style={"margin-bottom": '20px'}),
+            dbc.Label("Enter the time increment every time a player ends their turn (If there is no increment, leave it as 0)"),
+            dbc.Input(id="increment", type="number", min=0, max=180, placeholder="Increment", style={"margin-bottom": '20px'}),
 
             html.H5("White First Move"),
-            dbc.Label("Enter the max power of the car (must always be positive)"),
+            dbc.Label("Enter the white player's first move in a chess match"),
             dcc.Dropdown(id="white_first", options=white_first_moves, placeholder="White First Move", style={"margin-bottom": '20px'}),
 
             html.H5("Black First Move"),
-            dbc.Label("Enter the max power of the car (must always be positive)"),
+            dbc.Label("Enter the black player's first move in a chess match"),
             dcc.Dropdown(id="black_first", options=black_first_moves, placeholder="Black First Move", style={"margin-bottom": '20px'}),
 
             html.Div([dbc.Button(id="submit", children="Calculate White Winning Rate", color="primary"),
             html.Br(),
 
-            html.Output(id="win_rate", children="", style={"margin-top": '10px', "background-color": 'navy', "color":'white'})
+            html.Output(id="win_rate", children="", style={"margin-top": '10px', "background-color": 'DarkGoldenRod', "color":'white'})
             ],
             style={"margin-top": "30px"})
         ],
@@ -99,9 +107,10 @@ def calculate_selling_price(rated, white_rating, black_rating, time_limit, incre
                 'black_first_move': black_first}
 
     X = pd.DataFrame(features, index=[0])
-    y = np.round(model.predict_proba(X)[:, 1], 2)
+    X[num_cols] = X[num_cols].astype(float)
+    y = np.round(model.predict_proba(X)[:, 1][0]*100, 2)
 
-    return [f"White Winning Rate is: {y[0]}"]
+    return [f"White Winning Rate is: {y}%"]
 
 # Run the app
 if __name__ == '__main__':
